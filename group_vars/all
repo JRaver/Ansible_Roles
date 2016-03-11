@@ -1,7 +1,7 @@
 ---
 #file group_vars/all
 
-  proxy_switcher: true # 1 Proxy ON , 2 Proxy OFF
+  proxy_switcher: true # true - Proxy ON , false -  Proxy OFF
   proxy_address: 10.13.71.120
   proxy_port: 3128
   proxy_env:
