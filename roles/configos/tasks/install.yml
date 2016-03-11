@@ -18,7 +18,7 @@
    lineinfile: dest=/etc/yum.conf line=proxy={{ proxy_env.http_proxy }}
    when:  proxy_switcher 
  - name: Install Centos Repo
-   copy: src=centos.repo  dest=/etc/yum.repos.d/ owner=root group=root
+   template: src=centos.repo  dest=/etc/yum.repos.d/ owner=root group=root
    when: ansible_os_family == "RedHat"
  - name: Install Packages 1
    yum: name=make  state=present
