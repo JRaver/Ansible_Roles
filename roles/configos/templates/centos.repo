@@ -1,6 +1,6 @@
 [centos]
 name=CentOS $releasever - $basearch
-baseurl=http://ftp.heanet.ie/pub/centos/{{ ansible_distribution_major_version }} /os/$basearch/
+baseurl=http://ftp.heanet.ie/pub/centos/{{ ansible_distribution_major_version }}/os/$basearch/
 enabled=1
 gpgcheck=0
 
