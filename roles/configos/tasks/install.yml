@@ -3,13 +3,13 @@
 #file : roles/configos
  - name: Install libselinux
    yum: name={{ libselinux_http  }}/{{ libselinux_name  }} state=installed
-   environment: "{{proxy_env}}"
+   environment: "{{ proxy_env }}"
  - name: Download Epel Repo
    yum: name={{ epel_repo_url }}  state=installed
-   environment: "{{proxy_env}}"
+   environment: "{{ proxy_env }}"
  - name: Download Epel Key
    get_url: url={{ epel_repo_gpg_key_url }} use_proxy=yes dest={{ epel_repo_gpg_key_path }}  
-   environment: "{{proxy_env}}"
+   environment: "{{ proxy_env }}"
  - name: Import EPEL GPG key.
    rpm_key:  key={{ epel_repo_gpg_key_path }} state=present
 
