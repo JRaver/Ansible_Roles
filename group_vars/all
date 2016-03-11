@@ -2,8 +2,8 @@
 #file group_vars/all
 
   proxy_switcher: true # true - Proxy ON , false -  Proxy OFF
-  proxy_address: 10.13.71.120
-  proxy_port: 3128
+  proxy_address: proxy.ip
+  proxy_port: proxy.port
   proxy_env:
     http_proxy: http://{{ proxy_address }}:{{ proxy_port }}
     https_proxy: https://{{ proxy_address }}:{{ proxy_port }}
