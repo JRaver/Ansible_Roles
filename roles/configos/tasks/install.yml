@@ -1,0 +1,82 @@
+---
+
+#file : roles/configos
+ - name: Install libselinux
+   yum: name={{ libselinux_http  }}/{{ libselinux_name  }} state=installed
+   environment: "{{proxy_env}}"
+ - name: Download Epel Repo
+   yum: name={{ epel_repo_url }}  state=installed
+   environment: "{{proxy_env}}"
+ - name: Download Epel Key
+   get_url: url={{ epel_repo_gpg_key_url }} use_proxy=yes dest={{ epel_repo_gpg_key_path }}  
+   environment: "{{proxy_env}}"
+ - name: Import EPEL GPG key.
+   rpm_key:  key={{ epel_repo_gpg_key_path }} state=present
+
+ - name: Configure proxy if Proxy switcher set to on
+#   lineinfile: dest=/etc/yum.conf line=proxy={{ proxy_env.http_proxy }},{{ proxy_env.https_proxy }},{{ proxy_env.ftp_proxy }}
+   lineinfile: dest=/etc/yum.conf line=proxy={{ proxy_env.http_proxy }}
+   when:  proxy_switcher 
+ - name: Install Centos Repo
+   copy: src=centos.repo  dest=/etc/yum.repos.d/ owner=root group=root
+   when: ansible_os_family == "RedHat"
+ - name: Install Packages 1
+   yum: name=make  state=present
+ - name: Install Packages 2
+   yum: name=gcc state=present
+ - name: Install Packages 3
+   yum: name=mc state=present
+ - name: Install Packages 4
+   yum: name=iftop state=present
+ - name: Install Packages 5
+   yum: name=sysstat state=present
+ - name: Install Packages 6
+   yum: name=glibc state=present
+ - name: Install Packages 7
+   yum: name=glibc.i686 state=present 
+ - name: Install Packages 8
+   yum: name=screen state=present
+ - name: Install Packages 9
+   yum: name=ntp state=present
+ - name: Install Packages 10
+   yum: name=nmon state=present
+## When will be working "yum" with "with_items"
+#- name:Install All package
+#  yum: name= {{ item }} state=present
+#  with_items:
+#      - make
+#      - gcc
+#      - mc
+#      - iftop
+#      - sysstat
+#      - glibc
+#      - glibc.i686
+#      - screen
+#      - ntp
+#      - nmon
+
+ - name: Disable SElinux
+   selinux: state=disabled
+ - name: Add Admins accounts
+   user: name={{ item.name }} state=present groups=wheel password={{ item.pass }}
+   with_items:
+       - { name: "admin1", pass: "$6$hILxjKuL$l/AnW2Oo0/ciRf.KZe669gw6cAgVhLoHLTes8tZjAAslTvpyKJI/J2dkEmRh3ViaFXtxGI1kzspAAgFxWJ1yN." }
+       - { name: "admin2", pass: "$6$hILxjKuL$l/AnW2Oo0/ciRf.KZe669gw6cAgVhLoHLTes8tZjAAslTvpyKJI/J2dkEmRh3ViaFXtxGI1kzspAAgFxWJ1yN." }
+ - name: Local Time
+   file: src=/usr/share/zoneinfo/{{ timezone  }} dest=/etc/localtime state=link force=yes
+ - name: Configure NTP
+   template: src=ntp.conf dest=/etc/ntp.conf owner=root group=root
+   notify: 
+   - Restart ntp 
+ - name: Sync Time
+   shell: ntpdate -u {{ ntpserver }}
+ - name: chkconfig NTP ON 
+   shell: /sbin/chkconfig ntpd on
+ - name: Stop Iptables
+   service: name=iptables state=stopped
+ - name: chkconfig iptables OF
+   shell: /sbin/chkconfig iptables off
+ 
+ - name: Add Cron Job for SAR
+   cron: name="SAR" job="/usr/lib64/sa/sadc -S DISK 60 60 - &" state=present minute=0
+

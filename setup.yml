@@ -1,0 +1,10 @@
+---
+
+# file setup.yml
+- name: 'Pre config OS role'
+  hosts: 10.13.97.155
+  become: yes
+  become_method: sudo
+  become_user: root
+  roles:
+    - configos
