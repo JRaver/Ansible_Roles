@@ -1,0 +1,16 @@
+---
+ postgres_ver: 9.4
+ postgres_repo_url: http://yum.postgresql.org/{{ postgres_ver }}/redhat/rhel-6-x86_64/pgdg-redhat{{ postgres_ver |replace ('.','')  }}-{{ postgres_ver }}-1.noarch.rpm
+ prog_user: postgres
+ mount_disk_name: LvData
+ mount_point: /data
+ vg_name: postgresdb
+ pv_disk: 
+    - sdb
+    - sdc
+ lv_disk:
+    - { name: "{{ mount_disk_name }}", size: '2g' }
+    - { name: 'LvData1', size: '2g' }
+ data_dir:
+    - { dir: '{{ mount_point }}/logs/analyze', perm: '0775'}
+    - { dir: '{{ mount_point }}/db', perm: '0700'}

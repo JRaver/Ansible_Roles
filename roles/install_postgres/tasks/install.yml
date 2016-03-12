@@ -1,0 +1,41 @@
+---
+ - name: Install Postgres repo
+   yum: name={{ postgres_repo_url }} state=installed
+   environment: "{{ proxy_env }}"
+ - name: Make var
+   set_fact:  postgres_cut_ver={{  postgres_ver | replace ('.','') }}
+ - name: Install Perl-XML
+   yum: name=perl-XML-LibXML state=present 
+   environment: "{{ proxy_env }}"
+ - name: Install Postgres packages
+   yum: name={{ item }} state=present
+   environment: "{{ proxy_env }}"
+   with_items:
+     - postgresql{{ postgres_cut_ver }} 
+     - postgresql{{ postgres_cut_ver }}-contrib 
+     - postgresql{{ postgres_cut_ver }}-devel 
+     - postgresql{{ postgres_cut_ver }}-libs 
+     - postgresql{{ postgres_cut_ver }}-plperl 
+     - postgresql{{ postgres_cut_ver }}-server 
+     - postgresql{{ postgres_cut_ver }}-debuginfo 
+     - postgresql{{ postgres_cut_ver }}-docs
+   notify:
+     - Start Postgres
+ - name: Create Phys Disk
+   lvg: vg={{ vg_name }} pvs=/dev/{{ item }} 
+   with_items: "{{ pv_disk }}"
+ - lvol: vg={{ vg_name }} lv={{ item.name }} size={{ item.size }}
+   with_items: "{{ lv_disk }}"
+ - filesystem: fstype=ext4 dev=/dev/{{ vg_name }}/{{item.name}}
+   with_items: "{{ lv_disk }}"
+ - name: Create Dir
+   file: path={{ mount_point }}/ state=directory owner={{ prog_user }} group={{ prog_user }} mode=0775 recurse=yes
+ - name: Mount Point
+   mount: name={{ mount_point }}/ src=/dev/{{ vg_name  }}/{{ mount_disk_name }} fstype=ext4 state=mounted
+ - name: Create Other Dirs
+   file: path={{ item.dir }} state=directory owner={{ prog_user }} group={{ prog_user }} mode={{ item.perm  }} recurse=yes
+   with_items: "{{ data_dir }}"
+ - name: Links Dir
+   file: dest=/var/lib/pgsql/{{ postgres_ver }}/data src=/data/db state=link force=yes
+ - name: chkconfig postgres on
+   shell: chkconfig postgresql-{{ postgres_ver }} on
