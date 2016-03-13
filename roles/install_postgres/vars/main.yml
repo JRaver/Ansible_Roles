@@ -2,6 +2,7 @@
  postgres_ver: 9.4
  postgres_repo_url: http://yum.postgresql.org/{{ postgres_ver }}/redhat/rhel-6-x86_64/pgdg-redhat{{ postgres_ver |replace ('.','')  }}-{{ postgres_ver }}-1.noarch.rpm
  prog_user: postgres
+ bin_dir: /usr/pgsql-{{ postgres_ver }}/bin/
  mount_disk_name: LvData
  mount_point: /data
  vg_name: postgresdb
