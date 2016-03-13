@@ -19,8 +19,7 @@
      - postgresql{{ postgres_cut_ver }}-server 
      - postgresql{{ postgres_cut_ver }}-debuginfo 
      - postgresql{{ postgres_cut_ver }}-docs
-   notify:
-     - Start Postgres
+   register: yum_result
  - name: Create Phys Disk
    lvg: vg={{ vg_name }} pvs=/dev/{{ item }} 
    with_items: "{{ pv_disk }}"
@@ -28,14 +27,41 @@
    with_items: "{{ lv_disk }}"
  - filesystem: fstype=ext4 dev=/dev/{{ vg_name }}/{{item.name}}
    with_items: "{{ lv_disk }}"
- - name: Create Dir
-   file: path={{ mount_point }}/ state=directory owner={{ prog_user }} group={{ prog_user }} mode=0775 recurse=yes
+ - name: Create Dir {{mount_point }}
+   file: path={{ mount_point }}/ state=directory owner={{ prog_user }} group={{ prog_user }} mode=0775 
  - name: Mount Point
    mount: name={{ mount_point }}/ src=/dev/{{ vg_name  }}/{{ mount_disk_name }} fstype=ext4 state=mounted
  - name: Create Other Dirs
    file: path={{ item.dir }} state=directory owner={{ prog_user }} group={{ prog_user }} mode={{ item.perm  }} recurse=yes
    with_items: "{{ data_dir }}"
+ - name: check the current symlink
+   stat: path=/var/lib/pgsql/{{ postgres_ver }}/data 
+   register: data
+ - name: remove the folder (only if it is a folder)
+   file: path=/var/lib/pgsql/{{ postgres_ver }}/data state=absent
+   when: data.stat.isdir is defined and data.stat.isdir
  - name: Links Dir
    file: dest=/var/lib/pgsql/{{ postgres_ver }}/data src=/data/db state=link force=yes
  - name: chkconfig postgres on
    shell: chkconfig postgresql-{{ postgres_ver }} on
+ - name: Untar pg_amq 0.3
+   unarchive: src=pg_amqp_0.3.0.tar.gz dest=/tmp copy=yes
+   when: yum_result.changed
+ - name: Untar pg_amq 0.4
+   unarchive: src=pg_amqp_0.4.0.tar.gz dest=/tmp copy=yes
+   when: yum_result.changed
+ - name: install pg_amq 0.3
+   shell:  cd /tmp/pg_amqp/pg_amqp; /usr/bin/make clean; /usr/bin/make ;/usr/bin/make clean; /usr/bin/make install
+   args:
+     executable: /bin/bash
+   environment:
+     PATH: $PATH:{{ bin_dir }}:/bin:/usr/bin/
+   when: yum_result.changed
+ - name: install pg_amq 0.4
+   args:
+     executable: /bin/bash
+   shell: cd /tmp/pg_amqp_0.4.0/; /usr/bin/make clean; /usr/bin/make ; /usr/bin/make install
+   environment:
+     PATH: $PATH:{{ bin_dir }}:/bin:/usr/bin/
+   when: yum_result.changed
+   
