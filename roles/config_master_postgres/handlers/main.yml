@@ -1,0 +1,4 @@
+---
+- name: start postgres 
+  service: name=postgresql-{{ postgres_ver }} state=started
+
