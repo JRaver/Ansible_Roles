@@ -1,6 +1,6 @@
 ---
 
-#file : roles/configos
+#file : roles/configos 
  - name: Install libselinux
    yum: name={{ libselinux_http  }}/{{ libselinux_name  }} state=installed
    environment: "{{ proxy_env }}"
@@ -14,7 +14,6 @@
    rpm_key:  key={{ epel_repo_gpg_key_path }} state=present
 
  - name: Configure proxy if Proxy switcher set to on
-#   lineinfile: dest=/etc/yum.conf line=proxy={{ proxy_env.http_proxy }},{{ proxy_env.https_proxy }},{{ proxy_env.ftp_proxy }}
    lineinfile: dest=/etc/yum.conf line=proxy={{ proxy_env.http_proxy }}
    when:  proxy_switcher 
  - name: Install Centos Repo
