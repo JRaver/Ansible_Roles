@@ -19,8 +19,8 @@
     - { dir: '{{ mount_point }}/logs/analyze', perm: '0775'}
     - { dir: '{{ database_dir }}', perm: '0700'}
     - { dir: '{{ arc_wal_dir }}', perm: '0744'}
- rep_user: rep
- rep_pass: com3bit
+ rep_user: rep_user
+ rep_pass: some_pass
  auth_metod: trust
  num_master: "{{ groups['master'] | length }}"
  num_hosts: "{{ groups['slave'] | length }}"
