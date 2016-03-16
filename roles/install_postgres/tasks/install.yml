@@ -1,11 +1,17 @@
 ---
+ - name: Validate Number of Master Nodes
+   fail: msg="The number of master nodes must be exactly 1!"
+   when: num_master | int != 1
  - name: Install Postgres repo
    yum: name={{ postgres_repo_url }} state=installed
    environment: "{{ proxy_env }}"
  - name: Make var
    set_fact:  postgres_cut_ver={{  postgres_ver | replace ('.','') }}
  - name: Install Perl-XML
-   yum: name=perl-XML-LibXML state=present 
+   yum: name=perl-XML-LibXML state=present
+   environment: "{{ proxy_env }}"
+ - name: Install psycopg2
+   yum: name=python-psycopg2 state=present
    environment: "{{ proxy_env }}"
  - name: Install Postgres packages
    yum: name={{ item }} state=present
@@ -41,7 +47,7 @@
    file: path=/var/lib/pgsql/{{ postgres_ver }}/data state=absent
    when: data.stat.isdir is defined and data.stat.isdir
  - name: Links Dir
-   file: dest=/var/lib/pgsql/{{ postgres_ver }}/data src=/data/db state=link force=yes
+   file: dest=/var/lib/pgsql/{{ postgres_ver }}/data src={{ database_dir  }} state=link force=yes
  - name: chkconfig postgres on
    shell: chkconfig postgresql-{{ postgres_ver }} on
  - name: Untar pg_amq 0.3
@@ -51,7 +57,8 @@
    unarchive: src=pg_amqp_0.4.0.tar.gz dest=/tmp copy=yes
    when: yum_result.changed
  - name: install pg_amq 0.3
-   shell:  cd /tmp/pg_amqp/pg_amqp; /usr/bin/make clean; /usr/bin/make ;/usr/bin/make clean; /usr/bin/make install
+#   shell: cd /tmp/pg_amqp/pg_amqp; /usr/bin/make clean; /usr/bin/make ;/usr/bin/make clean; /usr/bin/make install
+   shell: cd /tmp/pg_amqp/pg_amqp; make clean; make ;make clean; make install
    args:
      executable: /bin/bash
    environment:
@@ -60,8 +67,18 @@
  - name: install pg_amq 0.4
    args:
      executable: /bin/bash
-   shell: cd /tmp/pg_amqp_0.4.0/; /usr/bin/make clean; /usr/bin/make ; /usr/bin/make install
+#   shell: cd /tmp/pg_amqp_0.4.0/; /usr/bin/make clean; /usr/bin/make ; /usr/bin/make install
+   shell: cd /tmp/pg_amqp_0.4.0/; make clean; make ; make install
    environment:
      PATH: $PATH:{{ bin_dir }}:/bin:/usr/bin/
    when: yum_result.changed
+ - name: Create .pgpass
+   file: path={{ pgpass_file }} owner={{ prog_user }}  group={{ prog_user }} mode=0600 state=touch
+ - name: Add connection params in .pggass
+   lineinfile: dest={{ pgpass_file }} line="{{ item }}:{{ conf_port }}:replication:{{ rep_user }}:{{ rep_pass }}"
+   with_items:
+    - "{{ groups['master'] }}"
+    - "{{ groups['slave'] }}"
+
+   
    

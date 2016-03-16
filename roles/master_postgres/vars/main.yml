@@ -3,10 +3,8 @@
  postgres_repo_url: http://yum.postgresql.org/{{ postgres_ver }}/redhat/rhel-6-x86_64/pgdg-redhat{{ postgres_ver |replace ('.','')  }}-{{ postgres_ver }}-1.noarch.rpm
  prog_user: postgres
  bin_dir: /usr/pgsql-{{ postgres_ver }}/bin/
- pgpass_file: ~postgres/.pgpass
  mount_disk_name: LvData
  mount_point: /data
- arc_wal_dir: "{{ mount_point }}/pg_arc"
  database_dir: "{{ mount_point }}/db"
  vg_name: postgresdb
  pv_disk: 
@@ -14,30 +12,15 @@
     - sdc
  lv_disk:
     - { name: "{{ mount_disk_name }}", size: '2g' }
-#    - { name: 'LvData1', size: '2g' }
+    - { name: 'LvData1', size: '2g' }
  data_dir:
     - { dir: '{{ mount_point }}/logs/analyze', perm: '0775'}
     - { dir: '{{ database_dir }}', perm: '0700'}
-    - { dir: '{{ arc_wal_dir }}', perm: '0744'}
  rep_user: rep
- rep_pass: com3bit
  auth_metod: trust
- num_master: "{{ groups['master'] | length }}"
- num_hosts: "{{ groups['slave'] | length }}"
 ####CONFIG FILE
  conf_conn_number: 100 
- conf_port: 5432
  conf_super_conn_number: 10
  conf_temp_buffer: 128MB
  conf_wokr_mem: 2000MB
  conf_maintenance_work_mem: 200MB
- conf_max_wal_senders: "{{ num_hosts|int + num_hosts|int }} "
- conf_wal_keep_segments: 50
- conf_archive_mode: "on"
- conf_archive_command: "'cp %p {{ arc_wal_dir }}/%f'"
- conf_hot_standby: "on"
-###WRITE AHEAD LOG
- conf_wal_level: hot_standby
- conf_fsync: "on"
- conf_synchronous_commit: "off"
- full_page_writes: "on"

@@ -1,0 +1,5 @@
+standby_mode = 'on'
+primary_conninfo = 'user={{ rep_user }} host={{ item  }} port=5432'
+trigger_file='/var/lib/pgsql/trigger_file'
+restore_command = 'scp {{ item  }}:{{ arc_wal_dir }}/%f "%p"'
+

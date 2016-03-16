@@ -1,0 +1,13 @@
+---
+ - name: Base backup
+   shell: "{{ bin_dir }}/pg_basebackup -h  {{ item  }} -c fast -X stream -U {{ rep_user }} -P -v --pgdata={{ database_dir }}"
+   with_items:
+    - "{{ groups['master'] }}"   
+   when:  yum_result.changed  
+   notify:
+     - start postgres
+ - name: recovery.conf
+   template: src=recovery.conf.j2 dest={{ database_dir  }}/recovery.conf owner=postgres group=postgres mode=0644 
+   with_items:
+    - "{{ groups['master'] }}"
+
