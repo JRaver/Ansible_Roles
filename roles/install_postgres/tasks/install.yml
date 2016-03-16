@@ -4,18 +4,14 @@
    when: num_master | int != 1
  - name: Install Postgres repo
    yum: name={{ postgres_repo_url }} state=installed
-   environment: "{{ proxy_env }}"
  - name: Make var
    set_fact:  postgres_cut_ver={{  postgres_ver | replace ('.','') }}
  - name: Install Perl-XML
    yum: name=perl-XML-LibXML state=present
-   environment: "{{ proxy_env }}"
  - name: Install psycopg2
    yum: name=python-psycopg2 state=present
-   environment: "{{ proxy_env }}"
  - name: Install Postgres packages
    yum: name={{ item }} state=present
-   environment: "{{ proxy_env }}"
    with_items:
      - postgresql{{ postgres_cut_ver }} 
      - postgresql{{ postgres_cut_ver }}-contrib 
