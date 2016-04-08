@@ -2,6 +2,10 @@
  - name: Validate Number of Master Nodes
    fail: msg="The number of master nodes must be exactly 1!"
    when: num_master | int != 1
+ - name: Add Group Postgres
+   group: name=postgres state=present
+ - name: Add Postgres Account
+   user: name=postgres shell=/bin/bash groups=postgres  generate_ssh_key=yes ssh_key_file=.ssh/id_rsa ssh_key_type=rsa 
  - name: Install Postgres repo
    yum: name={{ postgres_repo_url }} state=installed
  - name: Make var
